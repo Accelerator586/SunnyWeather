@@ -19,6 +19,11 @@ object SunnyWeatherNetwork {
     private val placeService=ServiceCreator.create<PlaceService>()
 
     /**
+     * 使用ServiceCreator创建了一个weatherService接口的动态代理对象
+     */
+    private val weatherService = ServiceCreator.create(WeatherService::class.java)
+
+    /**
      * 1.定义一个searchPlaces()函数，并在这里调用刚刚在PlaceService接口中定义的searchPlaces()方法，以发起搜索城市数据请求。
      * 2.为了让代码变得更加简洁，来简化Retrofit回调的写法。
      * 3.由于是需要借助协程技术来实现的，因此这里又定义了一个await()函数，并将searchPlaces()函数也声明成挂起函数。
@@ -41,4 +46,9 @@ object SunnyWeatherNetwork {
             }
         }) }
     }
+
+    suspend fun getDailyWeather(lng: String, lat: String) =
+        weatherService.getDailyWeather(lng, lat).await()
+    suspend fun getRealtimeWeather(lng: String, lat: String) =
+        weatherService.getRealtimeWeather(lng, lat).await()
 }
