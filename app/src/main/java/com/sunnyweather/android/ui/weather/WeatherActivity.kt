@@ -2,8 +2,10 @@ package com.sunnyweather.android.ui.weather
 
 import android.content.Context
 import android.graphics.Color
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -14,8 +16,12 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.sunnyweather.android.R
 import com.sunnyweather.android.databinding.ActivityWeatherBinding
+import com.sunnyweather.android.databinding.ForecastBinding
+import com.sunnyweather.android.databinding.LifeIndexBinding
+import com.sunnyweather.android.databinding.NowBinding
 import com.sunnyweather.android.logic.Repository.refreshWeather
 import com.sunnyweather.android.logic.model.Weather
 import com.sunnyweather.android.logic.model.getSky
@@ -24,21 +30,29 @@ import java.util.Locale
 
 
 class WeatherActivity : AppCompatActivity() {
-     lateinit var binding: ActivityWeatherBinding
+    lateinit var binding : ActivityWeatherBinding
+    private lateinit var swipeRefresh : SwipeRefreshLayout
+    private lateinit var nowLayoutBinding : NowBinding
+    private lateinit var forecastLayoutBinding : ForecastBinding
+
+    private lateinit var lifeIndexLayoutBinding : LifeIndexBinding
+
 
     val viewModel by lazy { ViewModelProvider(this).get(WeatherViewModel::class.java) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if(Build.VERSION.SDK_INT >= 21){
+            val decorView = window.decorView
+            decorView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            window.statusBarColor = Color.TRANSPARENT
 
-        val decorView = window.decorView
-        decorView.systemUiVisibility =
-            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        window.statusBarColor = Color.TRANSPARENT
+        }
         binding = ActivityWeatherBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-
+        initView()
         if (viewModel.locationLng.isEmpty()) {
             viewModel.locationLng = intent.getStringExtra("location_lng") ?: ""
         }
@@ -56,11 +70,13 @@ class WeatherActivity : AppCompatActivity() {
                 Toast.makeText(this, "无法成功获取天气信息", Toast.LENGTH_SHORT).show()
                 result.exceptionOrNull()?.printStackTrace()
             }
-            binding.swipeRefresh.isRefreshing = false
+            swipeRefresh.isRefreshing = false
         })
-        binding.swipeRefresh.setColorSchemeResources(R.color.black)
+        swipeRefresh.setColorSchemeResources(R.color.black)
+        Log.e("refreshWeather","refreshWeather first")
         refreshWeather()
-        binding.swipeRefresh.setOnRefreshListener {
+        swipeRefresh.setOnRefreshListener {
+            Log.e("refreshWeather","swipRefresh.setOnDefreshListener")
             refreshWeather()
         }
         val nowLayoutBinding =binding.nowLayout
@@ -80,16 +96,22 @@ class WeatherActivity : AppCompatActivity() {
         })
     }
 
-     fun refreshWeather() {
+    private fun initView() {
+        swipeRefresh = binding.swipeRefresh;
+        nowLayoutBinding = binding.nowLayout
+        forecastLayoutBinding = binding.forecastLayout
+        lifeIndexLayoutBinding = binding.lifeIndexLayout
+    }
+
+    fun refreshWeather() {
+        Log.e("refreshWeather","Activity refeshWeather")
         viewModel.refreshWeather(viewModel.locationLng, viewModel.locationLat)
-        binding.swipeRefresh.isRefreshing = true
+        swipeRefresh.isRefreshing=true
 
     }
 
     private fun showWeatherInfo(weather: Weather) {
-        val nowLayoutBinding =binding.nowLayout
-        val forecastLayoutBinding = binding.forecastLayout
-        val lifeIndexLayoutBinding = binding.lifeIndexLayout
+
         nowLayoutBinding.placeName.text = viewModel.placeName
         val realtime = weather.realtime
         val daily = weather.daily

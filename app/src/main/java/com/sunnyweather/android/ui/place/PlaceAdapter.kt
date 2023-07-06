@@ -1,6 +1,7 @@
 package com.sunnyweather.android.ui.place
 
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,10 +35,10 @@ RecyclerView.Adapter<PlaceAdapter.ViewHolder>(){
                 activity.viewModel.locationLng = place.location.lng
                 activity.viewModel.locationLat = place.location.lat
                 activity.viewModel.placeName = place.name
+                Log.e("refreshWeather","PlaceAdapter refreshWeather")
                 activity.refreshWeather()
             } else {
-                val intent = Intent(parent.context, WeatherActivity::class.java).
-                apply {
+                val intent = Intent(parent.context, WeatherActivity::class.java).apply {
                     putExtra("location_lng", place.location.lng)
                     putExtra("location_lat", place.location.lat)
                     putExtra("place_name", place.name)

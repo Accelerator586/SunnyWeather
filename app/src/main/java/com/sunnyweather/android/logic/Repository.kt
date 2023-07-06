@@ -1,5 +1,6 @@
 package com.sunnyweather.android.logic
 
+import android.util.Log
 import androidx.lifecycle.liveData
 import com.sunnyweather.android.logic.dao.PlaceDao
 import com.sunnyweather.android.logic.model.Place
@@ -41,6 +42,7 @@ object Repository {
     执行可以提升程序的运行效率
      */
     fun refreshWeather(lng: String, lat: String) =  fire(Dispatchers.IO) {
+        Log.e("refreshWeather","Repository refreshWeather")
         coroutineScope {
             val deferredRealtime = async {
                 SunnyWeatherNetwork.getRealtimeWeather(lng, lat)
